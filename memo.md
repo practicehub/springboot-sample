@@ -273,6 +273,104 @@ scrape_configs:
    - 定期备份重要的监控数据
    - 考虑使用时序数据库长期存储
 
+## CI/CD配置
+
+### GitHub Actions工作流
+
+项目使用GitHub Actions进行持续集成和持续部署。根据不同的分支，执行不同的CI任务。
+
+#### 分支策略
+
+1. **feature分支**
+   - 命名规范：`feature/**`
+   - CI任务：仅执行基础编译
+   ```bash
+   ./gradlew build -x test
+   ```
+
+2. **develop分支**
+   - CI任务：
+     - 基础编译
+     - 单元测试
+     - 生成测试报告和覆盖率报告
+
+3. **release分支**
+   - 命名规范：`release/**`
+   - CI任务：
+     - 基础编译
+     - 单元测试
+     - 安全扫描（Trivy）
+     - 依赖检查（OWASP）
+     - Docker镜像构建和推送
+
+#### CI工作流程
+
+1. **编译任务（build）**
+   - JDK 21环境
+   - Gradle构建
+   - 跳过测试（feature分支）
+
+2. **测试任务（test）**
+   - 运行单元测试
+   - 生成测试报告
+   - 生成代码覆盖率报告
+   - 上传测试报告到Actions artifacts
+
+3. **安全扫描（security-scan）**
+   - 使用Trivy扫描
+   - 检查严重和高风险漏洞
+   - 忽略无修复版本的漏洞
+
+4. **依赖检查（dependency-check）**
+   - OWASP dependency-check
+   - 生成依赖安全报告
+   - 上传报告到Actions artifacts
+
+5. **Docker构建（docker）**
+   - 使用Jib构建Docker镜像
+   - 推送到GitHub Container Registry
+   - 使用GitHub Token进行认证
+
+#### 工作流触发条件
+
+1. **自动触发**
+   - 推送到feature分支
+   - 推送到develop分支
+   - 推送到release分支
+   - Pull Request到develop或release分支
+
+2. **手动触发**
+   - 通过GitHub Actions界面手动触发（workflow_dispatch）
+
+#### 配置文件
+
+主要配置文件位于：
+- `.github/workflows/ci.yml`：GitHub Actions工作流配置
+- `build.gradle`：Gradle构建和插件配置
+
+#### 所需Secrets
+
+在GitHub仓库设置中配置：
+- `GITHUB_TOKEN`：自动提供，用于推送Docker镜像
+
+#### 最佳实践
+
+1. **分支管理**
+   - feature分支从develop分支创建
+   - 完成开发后合并回develop分支
+   - release分支从develop分支创建
+   - 发布完成后合并到develop分支
+
+2. **提交规范**
+   - 使用清晰的提交信息
+   - 保持提交粒度适中
+   - 确保代码符合项目规范
+
+3. **CI/CD维护**
+   - 定期更新依赖版本
+   - 关注安全扫描报告
+   - 保持Docker基础镜像更新
+
 ## Prometheus和Grafana设置
 
 项目在`sample-auth-devtool/docker`目录下提供了完整的监控环境配置。
