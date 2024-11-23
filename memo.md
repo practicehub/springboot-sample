@@ -165,6 +165,264 @@ aws.secretKey=your-secret-key
 aws.region=your-region
 ```
 
+## 监控配置
+
+项目使用Spring Boot Actuator和Prometheus进行监控和指标收集。
+
+#### 1. 监控依赖
+```gradle
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+}
+```
+
+#### 2. 监控配置（application-monitoring.yml）
+```yaml
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus,info,env,loggers,threaddump,heapdump
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      sla:
+        http.server.requests: 10ms, 50ms, 100ms, 200ms, 500ms
+```
+
+#### 3. 可用的监控端点
+- `/actuator/health`: 应用健康状态
+- `/actuator/metrics`: 应用指标
+- `/actuator/prometheus`: Prometheus格式的指标数据
+- `/actuator/info`: 应用信息
+- `/actuator/env`: 环境变量
+- `/actuator/loggers`: 日志级别管理
+- `/actuator/threaddump`: 线程转储
+- `/actuator/heapdump`: 堆转储
+
+#### 4. 监控指标
+1. **JVM指标**
+   - 内存使用情况
+   - 垃圾回收统计
+   - 线程使用情况
+   - 类加载统计
+
+2. **HTTP请求指标**
+   - 请求计数
+   - 请求延迟分布
+   - 请求错误率
+
+3. **数据库连接池指标**
+   - 活跃连接数
+   - 空闲连接数
+   - 等待连接数
+
+4. **缓存指标**
+   - 缓存命中率
+   - 缓存大小
+   - 缓存驱逐统计
+
+5. **自定义业务指标**
+   - 可以使用`@Timed`注解或MeterRegistry添加自定义指标
+
+#### 5. Prometheus集成
+1. **配置Prometheus服务器**
+```yaml
+scrape_configs:
+  - job_name: 'spring-boot-app'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['localhost:8080']
+```
+
+2. **Grafana仪表板**
+   - 可以导入现成的Spring Boot仪表板模板
+   - 仪表板ID: 12900（推荐使用）
+
+#### 6. 最佳实践
+1. **安全性**
+   - 在生产环境中限制actuator端点的访问
+   - 配置适当的CORS策略
+   - 考虑使用Spring Security保护监控端点
+
+2. **性能考虑**
+   - 合理配置指标收集频率
+   - 避免过多的自定义指标
+   - 适当配置指标保留时间
+
+3. **告警配置**
+   - 配置关键指标的告警规则
+   - 设置合适的告警阈值
+   - 建立告警通知渠道
+
+4. **监控数据保留**
+   - 配置适当的数据保留策略
+   - 定期备份重要的监控数据
+   - 考虑使用时序数据库长期存储
+
+## Prometheus和Grafana设置
+
+项目在`sample-auth-devtool/docker`目录下提供了完整的监控环境配置。
+
+#### 1. 目录结构
+```
+docker/
+├── docker-compose.yml              # Docker Compose配置文件
+├── prometheus/
+│   └── prometheus.yml             # Prometheus配置
+└── grafana/
+    └── provisioning/
+        ├── dashboards/            # Grafana仪表板配置
+        │   └── dashboard.yml
+        └── datasources/           # Grafana数据源配置
+            └── prometheus.yml
+```
+
+#### 2. 配置说明
+
+##### Docker Compose配置
+```yaml
+services:
+  prometheus:
+    image: prom/prometheus:v2.48.1
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+
+  grafana:
+    image: grafana/grafana:10.2.3
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+```
+
+##### Prometheus配置
+```yaml
+scrape_configs:
+  - job_name: 'spring-boot-app'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['host.docker.internal:8080']
+        labels:
+          application: 'spring-boot-sample'
+```
+
+#### 3. 使用方法
+
+1. **启动监控环境**
+```bash
+cd sample-auth/sample-auth-devtool/docker
+docker-compose up -d
+```
+
+2. **访问监控界面**
+   - Prometheus: http://localhost:9090
+   - Grafana: http://localhost:3000
+     - 用户名: admin
+     - 密码: admin123
+
+3. **导入Grafana仪表板**
+   - 登录Grafana
+   - 点击 "+" -> "Import"
+   - 输入仪表板ID: 12900（Spring Boot 2.1 Statistics）
+   - 选择Prometheus数据源
+   - 点击"Import"
+
+4. **查看指标**
+   - 在Prometheus中：
+     - 访问 http://localhost:9090/targets 查看目标状态
+     - 使用查询浏览器测试PromQL查询
+   - 在Grafana中：
+     - 查看导入的仪表板
+     - 可以创建自定义仪表板和告警规则
+
+#### 4. 常用监控指标
+
+1. **JVM相关**
+   ```promql
+   # JVM内存使用
+   jvm_memory_used_bytes
+   
+   # GC次数
+   jvm_gc_collection_seconds_count
+   
+   # 线程数
+   jvm_threads_live_threads
+   ```
+
+2. **HTTP请求**
+   ```promql
+   # 请求总数
+   http_server_requests_seconds_count
+   
+   # 请求延迟
+   http_server_requests_seconds_sum
+   
+   # 错误率
+   sum(rate(http_server_requests_seconds_count{status="5xx"}[5m]))
+   ```
+
+3. **系统资源**
+   ```promql
+   # CPU使用
+   process_cpu_usage
+   
+   # 系统负载
+   system_load_average_1m
+   ```
+
+#### 5. 告警配置
+
+1. **在Grafana中设置告警**
+   - 编辑仪表板面板
+   - 切换到"Alert"标签
+   - 配置告警条件和通知
+
+2. **常用告警规则示例**
+   - JVM堆内存使用超过80%
+   - HTTP请求错误率超过1%
+   - API响应时间超过500ms
+   - 系统负载过高
+
+#### 6. 最佳实践
+
+1. **数据保留**
+   - Prometheus默认保留15天数据
+   - 可以通过`--storage.tsdb.retention.time`参数调整
+
+2. **性能优化**
+   - 适当调整抓取间隔
+   - 避免过多的时间序列数据
+   - 合理使用标签
+
+3. **安全性**
+   - 在生产环境中修改默认密码
+   - 配置反向代理和SSL
+   - 限制访问IP
+
+4. **备份**
+   - 定期备份Grafana配置
+   - 导出重要的仪表板配置
+   - 保存自定义的告警规则
+
 ## 使用指南
 
 ### 1. 构建和运行
