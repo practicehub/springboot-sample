@@ -1,0 +1,21 @@
+rootProject.name = 'springboot-sample'
+
+// Auth modules
+include 'sample-auth'
+include 'sample-auth:sample-auth-batch'
+include 'sample-auth:sample-auth-consumer'
+include 'sample-auth:sample-auth-producer'
+include 'sample-auth:sample-auth-devtool'
+include 'sample-auth:sample-auth-controller'
+include 'sample-auth:sample-auth-mybatis'
+include 'sample-auth:sample-auth-service'
+
+// Business modules
+include 'sample-business'
+include 'sample-business:sample-business-batch'
+include 'sample-business:sample-business-consumer'
+include 'sample-business:sample-business-producer'
+include 'sample-business:sample-business-devtool'
+include 'sample-business:sample-business-controller'
+include 'sample-business:sample-business-mybatis'
+include 'sample-business:sample-business-service'

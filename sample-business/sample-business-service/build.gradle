@@ -1,0 +1,6 @@
+dependencies {
+    implementation project(':sample-business:sample-business-mybatis')
+    
+    // Cache
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+}

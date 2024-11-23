@@ -1,0 +1,44 @@
+plugins {
+    id 'com.google.cloud.tools.jib'
+}
+
+dependencies {
+    implementation project(':sample-business:sample-business-service')
+    implementation project(':sample-auth:sample-auth-service')  // For authentication
+    
+    // Web related dependencies
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+}
+
+jib {
+    from {
+        image = 'eclipse-temurin:21-jre-alpine'
+        platforms {
+            platform {
+                architecture = 'amd64'
+                os = 'linux'
+            }
+        }
+    }
+    to {
+        image = "business-controller"
+        tags = ['latest']
+        // image = "your-registry/business-controller"
+        // tags = ['latest', version]
+        // auth {
+        //     username = System.getenv('DOCKER_USERNAME')
+        //     password = System.getenv('DOCKER_PASSWORD')
+        // }
+    }
+    container {
+        mainClass = 'com.example.business.BusinessApplication'
+        jvmFlags = ['-Xms512m', '-Xmx512m']
+        ports = ['8081']
+        environment = [
+            'SPRING_PROFILES_ACTIVE': 'prod',
+            'TZ': 'Asia/Shanghai'
+        ]
+        creationTime = 'USE_CURRENT_TIMESTAMP'
+        user = '1000'
+    }
+}

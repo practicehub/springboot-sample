@@ -1,0 +1,11 @@
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+}
+
+dependencies {
+    // Auth specific dependencies can be added here
+}

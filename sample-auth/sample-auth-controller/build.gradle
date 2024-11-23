@@ -1,0 +1,44 @@
+plugins {
+    id 'com.google.cloud.tools.jib'    
+}
+
+dependencies {
+    implementation project(':sample-auth:sample-auth-service')
+    
+    // Security related dependencies
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.security:spring-security-oauth2-jose'
+}
+
+jib {
+    from {
+        image = 'eclipse-temurin:21-jre-alpine'
+        platforms {
+            platform {
+                architecture = 'amd64'
+                os = 'linux'
+            }
+        }
+    }
+    to {
+        image = "auth-controller"
+        tags = ['latest']
+        // image = "your-registry/auth-controller"
+        // tags = ['latest', version]
+        // auth {
+        //     username = System.getenv('DOCKER_USERNAME')
+        //     password = System.getenv('DOCKER_PASSWORD')
+        // }
+    }
+    container {
+        mainClass = 'com.example.auth.AuthApplication'
+        jvmFlags = ['-Xms512m', '-Xmx512m']
+        ports = ['8080']
+        environment = [
+            'SPRING_PROFILES_ACTIVE': 'prod',
+            'TZ': 'Asia/Shanghai'
+        ]
+        creationTime = 'USE_CURRENT_TIMESTAMP'
+        user = '1000'
+    }
+}

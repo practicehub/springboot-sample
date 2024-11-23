@@ -1,0 +1,7 @@
+dependencies {
+    implementation project(':sample-business:sample-business-service')
+    
+    // Messaging dependencies
+    implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'software.amazon.awssdk:sqs'
+}

@@ -1,0 +1,43 @@
+spring:
+  # 多数据源配置
+  datasource:
+    # SQLite配置（开发环境）
+    sqlite:
+      driver-class-name: org.sqlite.JDBC
+      url: jdbc:sqlite:auth_db.sqlite
+      username: 
+      password: 
+    
+    # PostgreSQL配置（生产环境）
+    postgresql:
+      driver-class-name: org.postgresql.Driver
+      url: jdbc:postgresql://localhost:5432/auth_db
+      username: postgres
+      password: postgres
+      hikari:
+        minimum-idle: 5
+        maximum-pool-size: 20
+        idle-timeout: 300000
+        connection-timeout: 20000
+        
+  # JPA配置
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        
+# MyBatis配置
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.example.auth.mybatis.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: true
+    
+# 数据源切换配置
+database:
+  type: ${DATABASE_TYPE:sqlite}  # 默认使用sqlite，可通过环境变量切换

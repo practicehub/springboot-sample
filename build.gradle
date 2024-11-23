@@ -1,0 +1,93 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.2.1'
+    id 'io.spring.dependency-management' version '1.1.4'
+    id 'com.google.cloud.tools.jib' version '3.4.0' apply false
+    id 'com.github.sherter.google-java-format' version '0.9'
+}
+
+allprojects {
+    group = 'com.example'
+    version = '0.0.1-SNAPSHOT'
+    
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'com.github.sherter.google-java-format'
+
+    googleJavaFormat {
+        toolVersion = '1.17.0'
+        options style: 'GOOGLE'
+    }
+
+    java {
+        sourceCompatibility = '21'
+        targetCompatibility = '21'
+    }
+
+    dependencies {
+        // Spring Boot
+        implementation 'org.springframework.boot:spring-boot-starter'
+        implementation 'org.springframework.boot:spring-boot-starter-web'
+        implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+        implementation 'org.springframework.boot:spring-boot-starter-security'
+        
+        // Database
+        implementation 'org.xerial:sqlite-jdbc:3.44.1.0'
+        implementation 'org.postgresql:postgresql:42.7.1'
+        implementation 'com.github.gwenn:sqlite-dialect:0.1.2'
+        
+        // Redis
+        implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+        
+        // Kafka
+        implementation 'org.springframework.kafka:spring-kafka'
+        
+        // AWS SQS
+        implementation platform('software.amazon.awssdk:bom:2.22.9')
+        implementation 'software.amazon.awssdk:sqs'
+        
+        // MyBatis
+        implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
+        
+        // JWT
+        implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+        runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
+        runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+        
+        // OAuth2
+        implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+        implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+        
+        // Lombok
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+        
+        // Test
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testImplementation 'org.springframework.security:spring-security-test'
+        testImplementation 'org.springframework.kafka:spring-kafka-test'
+    }
+
+    tasks.named('test') {
+        useJUnitPlatform()
+    }
+}
+
+// Disable bootJar for the root project
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+}

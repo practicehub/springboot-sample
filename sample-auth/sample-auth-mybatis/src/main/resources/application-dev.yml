@@ -1,0 +1,38 @@
+spring:
+  # 数据库配置 - 开发环境（SQLite）
+  datasource:
+    driver-class-name: org.sqlite.JDBC
+    url: jdbc:sqlite:auth_dev.sqlite
+    username: 
+    password: 
+    
+  # Redis配置 - 开发环境
+  redis:
+    host: localhost
+    port: 6379
+    database: 0
+    
+  # Kafka配置 - 开发环境
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: auth-group-dev
+      auto-offset-reset: earliest
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      
+# AWS配置 - 开发环境
+aws:
+  sqs:
+    endpoint: http://localhost:4566  # LocalStack endpoint
+    region: us-east-1
+    access-key: test
+    secret-key: test
+    queue-name: auth-queue-dev
+    
+# 日志配置 - 开发环境
+logging:
+  level:
+    com.example.auth: DEBUG
+    org.springframework: INFO

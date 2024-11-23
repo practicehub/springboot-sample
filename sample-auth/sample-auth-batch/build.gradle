@@ -1,0 +1,6 @@
+dependencies {
+    implementation project(':sample-auth:sample-auth-service')
+    
+    // Batch processing
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+}

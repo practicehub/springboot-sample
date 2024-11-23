@@ -1,0 +1,45 @@
+spring:
+  # 数据库配置 - 测试环境（PostgreSQL）
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://test-db:5432/auth_test
+    username: test_user
+    password: test_password
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 300000
+      connection-timeout: 20000
+    
+  # Redis配置 - 测试环境
+  redis:
+    host: test-redis
+    port: 6379
+    database: 1
+    password: test_redis_pass
+    
+  # Kafka配置 - 测试环境
+  kafka:
+    bootstrap-servers: test-kafka:9092
+    consumer:
+      group-id: auth-group-test
+      auto-offset-reset: earliest
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      
+# AWS配置 - 测试环境
+aws:
+  sqs:
+    region: us-east-1
+    access-key: ${AWS_ACCESS_KEY_TEST}
+    secret-key: ${AWS_SECRET_KEY_TEST}
+    queue-name: auth-queue-test
+    
+# 日志配置 - 测试环境
+logging:
+  level:
+    com.example.auth: INFO
+    org.springframework: WARN
+  file:
+    name: logs/auth-test.log

@@ -1,0 +1,17 @@
+spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}  # 默认使用开发环境配置
+
+# MyBatis通用配置
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.example.business.mybatis.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: true
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.example: DEBUG

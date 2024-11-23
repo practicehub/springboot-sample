@@ -1,0 +1,77 @@
+spring:
+  # 数据库配置 - 生产环境（PostgreSQL）
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${BUSINESS_DB_HOST:localhost}:${BUSINESS_DB_PORT:5432}/${BUSINESS_DB_NAME:business_prod}
+    username: ${BUSINESS_DB_USERNAME}
+    password: ${BUSINESS_DB_PASSWORD}
+    hikari:
+      minimum-idle: 10
+      maximum-pool-size: 50
+      idle-timeout: 300000
+      connection-timeout: 20000
+      connection-test-query: SELECT 1
+      validation-timeout: 5000
+    
+  # Redis配置 - 生产环境
+  redis:
+    host: ${BUSINESS_REDIS_HOST}
+    port: ${BUSINESS_REDIS_PORT:6379}
+    password: ${BUSINESS_REDIS_PASSWORD}
+    database: 1  # 使用不同的database避免与auth模块冲突
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 2
+        max-wait: -1ms
+    
+  # Kafka配置 - 生产环境
+  kafka:
+    bootstrap-servers: ${BUSINESS_KAFKA_SERVERS}
+    consumer:
+      group-id: business-group-prod
+      auto-offset-reset: latest
+      enable-auto-commit: false
+      properties:
+        security.protocol: SASL_SSL
+        sasl.mechanism: PLAIN
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      properties:
+        security.protocol: SASL_SSL
+        sasl.mechanism: PLAIN
+      
+# AWS配置 - 生产环境
+aws:
+  sqs:
+    region: ${BUSINESS_AWS_REGION}
+    access-key: ${BUSINESS_AWS_ACCESS_KEY}
+    secret-key: ${BUSINESS_AWS_SECRET_KEY}
+    queue-name: ${BUSINESS_SQS_QUEUE_NAME}
+    
+# 日志配置 - 生产环境
+logging:
+  level:
+    root: WARN
+    com.example.business: INFO
+    org.springframework: WARN
+  file:
+    name: /var/log/business/business-prod.log
+  logback:
+    rollingpolicy:
+      max-file-size: 100MB
+      max-history: 30
+      total-size-cap: 3GB
+
+# 性能调优配置
+server:
+  tomcat:
+    max-threads: 200
+    min-spare-threads: 20
+    accept-count: 100
+  compression:
+    enabled: true
+    min-response-size: 2048
+    mime-types: application/json,application/xml,text/html,text/plain
